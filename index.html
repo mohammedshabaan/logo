@@ -1,105 +1,136 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>صورة في منتصف صورة</title>
-<style>
-body{
-  font-family: Arial;
-  text-align:center;
-  background:#f5f5f5;
-  margin:0;
-  padding:10px;
-}
-canvas{
-  border:2px solid #333;
-  margin-top:20px;
-  max-width:100%;
-}
-input,button{
-  margin:8px;
-  padding:10px;
-  font-size:16px;
-  width:90%;
-  max-width:300px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صورة في منتصف صورة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 10px;
+        }
+
+        h2 {
+            font-size: 1.2em;
+        }
+
+        canvas {
+            border: 2px solid #333;
+            margin-top: 20px;
+            width: 90%;
+            max-width: 500px;
+            height: auto;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        input,
+        button {
+            margin: 8px;
+            padding: 10px;
+            font-size: 16px;
+            width: 90%;
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+        @media screen and (max-width: 600px) {
+            h2 {
+                font-size: 1em;
+            }
+             input,
+             button {
+                font-size: 14px;
+            }
+            canvas {
+                width: 100%;
+            }
+            
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>اختر صورتك لتوضع في منتصف الخلفية</h2>
-<input type="file" id="upload" accept="image/*"><br>
-<input type="text" id="name" placeholder="اكتب الاسم هنا"><br>
-<button id="download">تحميل الصورة</button>
-<br>
-<canvas id="canvas"></canvas>
+    <h2>اختر صورتك لتوضع في منتصف الخلفية</h2>
+    <input type="file" id="upload" accept="image/*"><br>
+    <input type="text" id="name" placeholder="اكتب الاسم هنا"><br>
+    <button id="download">تحميل الصورة</button>
+    <br>
+    <canvas id="canvas"></canvas>
 
-<script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
 
-const bg = new Image(); // الخلفية
-const userImg = new Image(); // صورة المستخدم
-bg.src = "22.jpg"; // ضع اسم صورتك هنا
+        const bg = new Image(); // الخلفية
+        const userImg = new Image(); // صورة المستخدم
+        bg.src = "22.jpg"; // ضع اسم صورتك هنا
 
-function resizeCanvas(){
-  canvas.width = window.innerWidth * 0.9;
-  canvas.height = canvas.width; // مربع
-  draw();
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
+        // جعل الكانفس متجاوب مع الهاتف
+        function resizeCanvas() {
+            const maxWidth = window.innerWidth * 0.95;
+            canvas.width = maxWidth;
+            canvas.height = maxWidth; // مربع دائماً
+            draw();
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
 
-document.getElementById("upload").onchange = e => {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => { userImg.src = ev.target.result; }
-  reader.readAsDataURL(file);
-}
+        // رفع صورة المستخدم
+        document.getElementById("upload").onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => { userImg.src = ev.target.result; }
+            reader.readAsDataURL(file);
+        }
 
-document.getElementById("name").oninput = draw;
+        // تحديث الاسم
+        document.getElementById("name").oninput = draw;
 
-bg.onload = draw;
-userImg.onload = draw;
+        bg.onload = draw;
+        userImg.onload = draw;
 
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // الخلفية
-  ctx.drawImage(bg,0,0,canvas.width,canvas.height);
+            // الخلفية
+            ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
 
-  // صورة المستخدم في المنتصف
-  if(userImg.src){
-    let scale = 0.3; // حجم الصورة نسبةً للكانفس
-    let w = userImg.width * scale;
-    let h = userImg.height * scale;
-    let x = (canvas.width - w)/2;
-    let y = (canvas.height - h)/1.1;
-    ctx.drawImage(userImg, x, y, w, h);
-  }
+            // صورة المستخدم في المنتصف
+            if (userImg.src) {
+                let scale = 0.3 * (canvas.width / 500); // تصغير متناسب مع الهاتف
+                let w = userImg.width * scale;
+                let h = userImg.height * scale;
+                let x = (canvas.width - w) / 1.9;
+                let y = (canvas.height - h) / 1; // منتصف الكانفس
+                ctx.drawImage(userImg, x, y, w, h);
+            }
 
-  // الاسم أسفل الصورة
-  const name = document.getElementById("name").value;
-  if(name){
-    ctx.fillStyle = "white";
-    ctx.font = "bold 22px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(name, canvas.width/2, canvas.height - 30);
-  }
-}
+            // الاسم أسفل الصورة
+            const name = document.getElementById("name").value;
+            if (name) {
+                ctx.fillStyle = "white";
+                ctx.font = `bold ${Math.floor(canvas.width / 20)}px Arial`;
+                ctx.textAlign = "center";
+                ctx.fillText(name, canvas.width / 2, canvas.height - 20);
+            }
+        }
 
-// تحميل الصورة
-document.getElementById("download").onclick = function(){
-  const link = document.createElement("a");
-  link.download = "final-image.png";
-  link.href = canvas.toDataURL();
-  link.click();
-}
-</script>
+        // تحميل الصورة
+        document.getElementById("download").onclick = function () {
+            const link = document.createElement("a");
+            link.download = "final-image.png";
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
 
 </body>
+
 </html>
-
-

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <title>تعديل الصورة</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: #f5f5f5;
+        }
+
+        canvas {
+            border: 2px solid #333;
+            margin-top: 20px;
+            cursor: grab;
+        }
+
+        input,
+        button {
+            margin: 8px;
+            padding: 8px 12px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>أضف صورتك وحركها</h2>
+
+    <input type="file" id="upload" accept="image/*"><br>
+    <input type="text" id="name" placeholder="اكتب الاسم هنا"><br>
+
+    <button id="download">تحميل الصورة</button>
+
+    <br>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <div class="copyright">© 2023 جميع الحقوق محفوظة</div>
+
+    <script>
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const bg = new Image();
+        const userImg = new Image();
+
+        bg.src = "22.jpg";
+
+        let x = 180;
+        let y = 140;
+        let scale = 1;
+
+        let dragging = false;
+        let startX, startY;
+
+        bg.onload = draw;
+
+        document.getElementById("upload").onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function (ev) {
+                userImg.src = ev.target.result;
+            }
+
+            reader.readAsDataURL(file);
+        }
+
+        userImg.onload = draw;
+
+        document.getElementById("name").oninput = draw;
+
+        /* الرسم */
+
+        function draw() {
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.drawImage(bg, 0, 0, 500, 500);
+
+            if (userImg.src) {
+
+                let w = userImg.width * scale;
+                let h = userImg.height * scale;
+
+                ctx.drawImage(userImg, x, y, w, h);
+
+            }
+
+            const name = document.getElementById("name").value;
+
+            ctx.fillStyle = "white";
+            ctx.font = "bold 28px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(name, 250, 470);
+
+        }
+
+        /* تحريك الصورة */
+
+        canvas.addEventListener("mousedown", e => {
+            dragging = true;
+            startX = e.offsetX - x;
+            startY = e.offsetY - y;
+            canvas.style.cursor = "grabbing";
+        });
+
+        canvas.addEventListener("mouseup", () => {
+            dragging = false;
+            canvas.style.cursor = "grab";
+        });
+
+        canvas.addEventListener("mousemove", e => {
+            if (!dragging) return;
+
+            x = e.offsetX - startX;
+            y = e.offsetY - startY;
+
+            draw();
+        });
+
+        /* تكبير وتصغير */
+
+        canvas.addEventListener("wheel", e => {
+
+            e.preventDefault();
+
+            if (e.deltaY < 0) {
+                scale += 0.05;
+            } else {
+                scale -= 0.05;
+            }
+
+            if (scale < 0.1) scale = 0.1;
+
+            draw();
+
+        });
+
+        /* تحميل الصورة */
+
+        document.getElementById("download").onclick = function () {
+
+            const link = document.createElement("a");
+
+            link.download = "final-image.png";
+
+            link.href = canvas.toDataURL();
+
+            link.click();
+
+        }
+
+    </script>
+
+</body>
+
+</html>
